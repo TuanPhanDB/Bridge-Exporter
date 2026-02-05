@@ -1,0 +1,43 @@
+services:
+  chromadb:
+    image: chromadb/chroma  
+    container_name: node-c1-chromadb
+    ports:
+      - "8000:8000"
+    networks:
+      - app-network
+
+  prometheus:
+    image: prom/prometheus:latest 
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - app-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana_exporter
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+
+      # Cassandra data source plugin
+      - GF_INSTALL_PLUGINS=hadesarchitect-cassandra-datasource
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  grafana-data:
